@@ -27,6 +27,21 @@ type BurrowExporter struct {
 	skipPartitionMaxOffset     bool
 	skipTotalLag               bool
 	skipTopicPartitionOffset   bool
+	skipTopicSumOffset         bool
+	skipConsumerTopicLag       bool
+}
+
+type TopicSumOffset struct {
+	offsets float64
+	cluster string
+	topic   string
+}
+
+type ConsumerTopicLag struct {
+	lag     float64
+	cluster string
+	topic   string
+	group   string
 }
 
 func (be *BurrowExporter) processGroup(cluster, group string) {
@@ -38,7 +53,24 @@ func (be *BurrowExporter) processGroup(cluster, group string) {
 		return
 	}
 
+	sumTopicsLag := make(map[string]ConsumerTopicLag)
+
 	for _, partition := range status.Status.Partitions {
+
+		if !be.skipConsumerTopicLag {
+			consumerTopicLag, found := sumTopicsLag[partition.Topic]
+			if !found {
+				consumerTopicLag = ConsumerTopicLag{
+					cluster: status.Status.Cluster,
+					group:   status.Status.Group,
+					topic:   partition.Topic,
+					lag:     0,
+				}
+			}
+			consumerTopicLag.lag += float64(partition.End.Lag)
+			sumTopicsLag[partition.Topic] = consumerTopicLag
+		}
+
 		if !be.skipPartitionLag {
 			KafkaConsumerPartitionLag.With(prometheus.Labels{
 				"cluster":   status.Status.Cluster,
@@ -76,6 +108,14 @@ func (be *BurrowExporter) processGroup(cluster, group string) {
 		}
 	}
 
+	for _, consumerTopicLag := range sumTopicsLag {
+		KafkaConsumerTopicLag.With(prometheus.Labels{
+			"cluster": consumerTopicLag.cluster,
+			"group":   consumerTopicLag.group,
+			"topic":   consumerTopicLag.topic,
+		}).Set(consumerTopicLag.lag)
+	}
+
 	if !be.skipTotalLag {
 		KafkaConsumerTotalLag.With(prometheus.Labels{
 			"cluster": status.Status.Cluster,
@@ -109,6 +149,17 @@ func (be *BurrowExporter) processTopic(cluster, topic string) {
 				"partition": strconv.Itoa(i),
 			}).Set(float64(offset))
 		}
+	}
+
+	if !be.skipTopicSumOffset {
+		var totalTopicOffset float64 = 0.0
+		for _, offset := range details.Offsets {
+			totalTopicOffset += float64(offset)
+		}
+		KafkaTopicSumOffset.With(prometheus.Labels{
+			"cluster": cluster,
+			"topic":   topic,
+		}).Set(totalTopicOffset)
 	}
 }
 
@@ -223,7 +274,9 @@ func (be *BurrowExporter) mainLoop(ctx context.Context) {
 }
 
 func MakeBurrowExporter(burrowUrl string, apiVersion int, metricsAddr string, interval int, skipPartitionStatus bool,
-	skipConsumerStatus bool, skipPartitionLag bool, skipPartitionCurrentOffset bool, skipPartitionMaxOffset bool, skipTotalLag bool, skipTopicPartitionOffset bool) *BurrowExporter {
+	skipConsumerStatus bool, skipPartitionLag bool, skipPartitionCurrentOffset bool, skipPartitionMaxOffset bool,
+	skipTotalLag bool, skipTopicPartitionOffset bool, skipTopicSumOffset bool,
+	skipConsumerTopicLag bool) *BurrowExporter {
 	return &BurrowExporter{
 		client:                     MakeBurrowClient(burrowUrl, apiVersion),
 		metricsListenAddr:          metricsAddr,
@@ -235,5 +288,7 @@ func MakeBurrowExporter(burrowUrl string, apiVersion int, metricsAddr string, in
 		skipPartitionMaxOffset:     skipPartitionMaxOffset,
 		skipTotalLag:               skipTotalLag,
 		skipTopicPartitionOffset:   skipTopicPartitionOffset,
+		skipConsumerTopicLag:       skipConsumerTopicLag,
+		skipTopicSumOffset:         skipTopicSumOffset,
 	}
 }

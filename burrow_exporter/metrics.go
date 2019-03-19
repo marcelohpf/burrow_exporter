@@ -14,6 +14,13 @@ var Status = map[string]int{
 }
 
 var (
+	KafkaConsumerTopicLag = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "kafka_burrow_topic_lag",
+			Help: "The sum lag of the latest offset commit on topics as reported by burrow.",
+		},
+		[]string{"cluster", "group", "topic"},
+	)
 	KafkaConsumerPartitionLag = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "kafka_burrow_partition_lag",
@@ -56,6 +63,13 @@ var (
 		},
 		[]string{"cluster", "group"},
 	)
+	KafkaTopicSumOffset = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "kafka_burrow_topic_offset",
+			Help: "The sum of latest offset on a topic's partition as reported by burrow.",
+		},
+		[]string{"cluster", "topic"},
+	)
 	KafkaTopicPartitionOffset = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "kafka_burrow_topic_partition_offset",
@@ -66,6 +80,8 @@ var (
 )
 
 func init() {
+	prometheus.MustRegister(KafkaTopicSumOffset)
+	prometheus.MustRegister(KafkaConsumerTopicLag)
 	prometheus.MustRegister(KafkaConsumerPartitionLag)
 	prometheus.MustRegister(KafkaConsumerPartitionCurrentOffset)
 	prometheus.MustRegister(KafkaConsumerPartitionCurrentStatus)

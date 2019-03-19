@@ -82,6 +82,16 @@ func main() {
 			Usage:  "Set the log level",
 			EnvVar: "LOG_LEVEL",
 		},
+		cli.BoolFlag{
+			Name:   "skip-topic-sum-offset",
+			Usage:  "Skip exporting skip topic sum offset",
+			EnvVar: "SKIP_TOPIC_SUM_OFFSET",
+		},
+		cli.BoolFlag{
+			Name:   "skip-consumer-topic-lag",
+			Usage:  "Skip exporting skip consumer topic lag",
+			EnvVar: "SKIP_CONSUMER_TOPIC_LAG",
+		},
 	}
 
 	app.Action = func(c *cli.Context) error {
@@ -119,7 +129,9 @@ func main() {
 			c.Bool("skip-partition-current-offset"),
 			c.Bool("skip-partition-max-offset"),
 			c.Bool("skip-total-lag"),
-			c.Bool("skip-topic-partition-offset"))
+			c.Bool("skip-topic-partition-offset"),
+			c.Bool("skip-topic-sum-offset"),
+			c.Bool("skip-consumer-topic-lag"))
 		go exporter.Start(ctx)
 
 		<-done

@@ -19,63 +19,63 @@ var (
 			Name: "kafka_burrow_topic_lag",
 			Help: "The sum lag of the latest offset commit on topics as reported by burrow.",
 		},
-		[]string{"cluster", "group", "topic"},
+		[]string{"cluster_name", "group", "topic"},
 	)
 	KafkaConsumerPartitionLag = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "kafka_burrow_partition_lag",
 			Help: "The lag of the latest offset commit on a partition as reported by burrow.",
 		},
-		[]string{"cluster", "group", "topic", "partition"},
+		[]string{"cluster_name", "group", "topic", "partition"},
 	)
 	KafkaConsumerPartitionCurrentOffset = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "kafka_burrow_partition_current_offset",
 			Help: "The latest offset commit on a partition as reported by burrow.",
 		},
-		[]string{"cluster", "group", "topic", "partition"},
+		[]string{"cluster_name", "group", "topic", "partition"},
 	)
 	KafkaConsumerPartitionCurrentStatus = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "kafka_burrow_partition_status",
 			Help: "The status of a partition as reported by burrow.",
 		},
-		[]string{"cluster", "group", "topic", "partition"},
+		[]string{"cluster_name", "group", "topic", "partition"},
 	)
 	KafkaConsumerPartitionMaxOffset = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "kafka_burrow_partition_max_offset",
 			Help: "The log end offset on a partition as reported by burrow.",
 		},
-		[]string{"cluster", "group", "topic", "partition"},
+		[]string{"cluster_name", "group", "topic", "partition"},
 	)
 	KafkaConsumerTotalLag = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "kafka_burrow_total_lag",
 			Help: "The total amount of lag for the consumer group as reported by burrow",
 		},
-		[]string{"cluster", "group"},
+		[]string{"cluster_name", "group"},
 	)
 	KafkaConsumerStatus = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "kafka_burrow_status",
 			Help: "The status of a partition as reported by burrow.",
 		},
-		[]string{"cluster", "group"},
+		[]string{"cluster_name", "group"},
 	)
 	KafkaTopicSumOffset = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "kafka_burrow_topic_offset",
 			Help: "The sum of latest offset on a topic's partition as reported by burrow.",
 		},
-		[]string{"cluster", "topic"},
+		[]string{"cluster_name", "topic"},
 	)
 	KafkaTopicPartitionOffset = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "kafka_burrow_topic_partition_offset",
 			Help: "The latest offset on a topic's partition as reported by burrow.",
 		},
-		[]string{"cluster", "topic", "partition"},
+		[]string{"cluster_name", "topic", "partition"},
 	)
 )
 

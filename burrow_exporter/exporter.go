@@ -31,12 +31,6 @@ type BurrowExporter struct {
 	skipConsumerTopicLag       bool
 }
 
-type TopicSumOffset struct {
-	offsets float64
-	cluster string
-	topic   string
-}
-
 type ConsumerTopicLag struct {
 	lag     float64
 	cluster string
@@ -73,60 +67,60 @@ func (be *BurrowExporter) processGroup(cluster, group string) {
 
 		if !be.skipPartitionLag {
 			KafkaConsumerPartitionLag.With(prometheus.Labels{
-				"cluster":   status.Status.Cluster,
-				"group":     status.Status.Group,
-				"topic":     partition.Topic,
-				"partition": strconv.Itoa(int(partition.Partition)),
+				"cluster_name": status.Status.Cluster,
+				"group":        status.Status.Group,
+				"topic":        partition.Topic,
+				"partition":    strconv.Itoa(int(partition.Partition)),
 			}).Set(float64(partition.End.Lag))
 		}
 
 		if !be.skipPartitionCurrentOffset {
 			KafkaConsumerPartitionCurrentOffset.With(prometheus.Labels{
-				"cluster":   status.Status.Cluster,
-				"group":     status.Status.Group,
-				"topic":     partition.Topic,
-				"partition": strconv.Itoa(int(partition.Partition)),
+				"cluster_name": status.Status.Cluster,
+				"group":        status.Status.Group,
+				"topic":        partition.Topic,
+				"partition":    strconv.Itoa(int(partition.Partition)),
 			}).Set(float64(partition.End.Offset))
 		}
 
 		if !be.skipPartitionStatus {
 			KafkaConsumerPartitionCurrentStatus.With(prometheus.Labels{
-				"cluster":   status.Status.Cluster,
-				"group":     status.Status.Group,
-				"topic":     partition.Topic,
-				"partition": strconv.Itoa(int(partition.Partition)),
+				"cluster_name": status.Status.Cluster,
+				"group":        status.Status.Group,
+				"topic":        partition.Topic,
+				"partition":    strconv.Itoa(int(partition.Partition)),
 			}).Set(float64(Status[partition.Status]))
 		}
 
 		if !be.skipPartitionMaxOffset {
 			KafkaConsumerPartitionMaxOffset.With(prometheus.Labels{
-				"cluster":   status.Status.Cluster,
-				"group":     status.Status.Group,
-				"topic":     partition.Topic,
-				"partition": strconv.Itoa(int(partition.Partition)),
+				"cluster_name": status.Status.Cluster,
+				"group":        status.Status.Group,
+				"topic":        partition.Topic,
+				"partition":    strconv.Itoa(int(partition.Partition)),
 			}).Set(float64(partition.End.MaxOffset))
 		}
 	}
 
 	for _, consumerTopicLag := range sumTopicsLag {
 		KafkaConsumerTopicLag.With(prometheus.Labels{
-			"cluster": consumerTopicLag.cluster,
-			"group":   consumerTopicLag.group,
-			"topic":   consumerTopicLag.topic,
+			"cluster_name": consumerTopicLag.cluster,
+			"group":        consumerTopicLag.group,
+			"topic":        consumerTopicLag.topic,
 		}).Set(consumerTopicLag.lag)
 	}
 
 	if !be.skipTotalLag {
 		KafkaConsumerTotalLag.With(prometheus.Labels{
-			"cluster": status.Status.Cluster,
-			"group":   status.Status.Group,
+			"cluster_name": status.Status.Cluster,
+			"group":        status.Status.Group,
 		}).Set(float64(status.Status.TotalLag))
 	}
 
 	if !be.skipConsumerStatus {
 		KafkaConsumerStatus.With(prometheus.Labels{
-			"cluster": status.Status.Cluster,
-			"group":   status.Status.Group,
+			"cluster_name": status.Status.Cluster,
+			"group":        status.Status.Group,
 		}).Set(float64(Status[status.Status.Status]))
 	}
 }
@@ -144,9 +138,9 @@ func (be *BurrowExporter) processTopic(cluster, topic string) {
 	if !be.skipTopicPartitionOffset {
 		for i, offset := range details.Offsets {
 			KafkaTopicPartitionOffset.With(prometheus.Labels{
-				"cluster":   cluster,
-				"topic":     topic,
-				"partition": strconv.Itoa(i),
+				"cluster_name": cluster,
+				"topic":        topic,
+				"partition":    strconv.Itoa(i),
 			}).Set(float64(offset))
 		}
 	}
@@ -157,8 +151,8 @@ func (be *BurrowExporter) processTopic(cluster, topic string) {
 			totalTopicOffset += float64(offset)
 		}
 		KafkaTopicSumOffset.With(prometheus.Labels{
-			"cluster": cluster,
-			"topic":   topic,
+			"cluster_name": cluster,
+			"topic":        topic,
 		}).Set(totalTopicOffset)
 	}
 }
